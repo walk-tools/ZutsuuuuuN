@@ -1,0 +1,49 @@
+{
+  "hash": "1d34856d",
+  "configHash": "2e4df438",
+  "lockfileHash": "e9416fab",
+  "browserHash": "c6e8e163",
+  "optimized": {
+    "dexie": {
+      "src": "../../node_modules/dexie/import-wrapper.mjs",
+      "file": "dexie.js",
+      "fileHash": "53924548",
+      "needsInterop": false
+    },
+    "dexie-react-hooks": {
+      "src": "../../node_modules/dexie-react-hooks/dist/dexie-react-hooks.mjs",
+      "file": "dexie-react-hooks.js",
+      "fileHash": "4d43cc76",
+      "needsInterop": false
+    },
+    "react": {
+      "src": "../../node_modules/react/index.js",
+      "file": "react.js",
+      "fileHash": "6e861410",
+      "needsInterop": true
+    },
+    "react-dom/client": {
+      "src": "../../node_modules/react-dom/client.js",
+      "file": "react-dom_client.js",
+      "fileHash": "37cfaccd",
+      "needsInterop": true
+    },
+    "react/jsx-dev-runtime": {
+      "src": "../../node_modules/react/jsx-dev-runtime.js",
+      "file": "react_jsx-dev-runtime.js",
+      "fileHash": "68c54486",
+      "needsInterop": true
+    }
+  },
+  "chunks": {
+    "chunk-O72AS64O": {
+      "file": "chunk-O72AS64O.js"
+    },
+    "chunk-NO6UH6X3": {
+      "file": "chunk-NO6UH6X3.js"
+    },
+    "chunk-5WRI5ZAA": {
+      "file": "chunk-5WRI5ZAA.js"
+    }
+  }
+}

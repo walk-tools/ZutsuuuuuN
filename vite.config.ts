@@ -11,8 +11,8 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       manifest: {
-        name: 'Zutsuu - 頭痛管理',
-        short_name: 'Zutsuu',
+        name: 'ZutsuuuuuN! - 頭痛管理',
+        short_name: 'ZutsuuuuuN!',
         description: '頭痛記録・管理アプリ',
         theme_color: '#f8f6ff',
         background_color: '#f8f6ff',

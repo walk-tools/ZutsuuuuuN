@@ -74,7 +74,7 @@ export default function App() {
             <div className="w-9" />
           )}
           <h1 className="text-lg font-semibold tracking-wide t-primary">
-            Zutsuuuun!
+            ZutsuuuuuN!
           </h1>
           {view === 'home' ? (
             <div className="flex gap-1.5">

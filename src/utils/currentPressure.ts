@@ -1,11 +1,32 @@
 import { db } from '../db'
 
+async function getCoords(): Promise<{ lat: number; lon: number } | null> {
+  const settings = await db.settings.get(1)
+  if (settings?.latitude && settings?.longitude) {
+    return { lat: settings.latitude, lon: settings.longitude }
+  }
+
+  if (!navigator.geolocation) return null
+
+  return new Promise((resolve) => {
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const lat = Math.round(pos.coords.latitude * 100) / 100
+        const lon = Math.round(pos.coords.longitude * 100) / 100
+        resolve({ lat, lon })
+      },
+      () => resolve(null),
+      { timeout: 10000 },
+    )
+  })
+}
+
 export async function getCurrentPressure(): Promise<number | undefined> {
   try {
-    const settings = await db.settings.get(1)
-    if (!settings?.latitude || !settings?.longitude) return undefined
+    const coords = await getCoords()
+    if (!coords) return undefined
 
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${settings.latitude}&longitude=${settings.longitude}&hourly=surface_pressure&timezone=Asia/Tokyo&forecast_days=1`
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}&hourly=surface_pressure&timezone=Asia/Tokyo&forecast_days=1`
     const res = await fetch(url)
     if (!res.ok) return undefined
 

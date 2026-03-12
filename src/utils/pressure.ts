@@ -14,7 +14,8 @@ export interface DailyRisk {
   weekday: string // "月" etc
   day: number // 10 etc
   level: 'low' | 'medium' | 'high'
-  maxDrop: number
+  maxDrop24h: number // 24時間内の最大低下
+  dayOverDay: number | null // 前日比（前日平均 - 当日平均、低下ならマイナス）
   minPressure: number
   maxPressure: number
   avgPressure: number
@@ -104,36 +105,23 @@ export function analyzeWeeklyRisk(
     const minPressure = Math.round(Math.min(...pressures) * 10) / 10
     const maxPressure = Math.round(Math.max(...pressures) * 10) / 10
 
-    // 6時間窓での最大低下
-    let maxDrop = 0
+    // 24時間窓での最大低下（日内の全時間ペアを比較）
+    let maxDrop24h = 0
     let dropStartsAt: string | null = null
     const start = indices[0]
-    const end = Math.min(
-      indices[indices.length - 1] + 1,
-      forecast.surfacePressure.length,
-    )
+    const end = indices[indices.length - 1] + 1
 
     for (let i = start; i < end; i++) {
-      const windowEnd = Math.min(i + 6, forecast.surfacePressure.length)
-      for (let j = i + 1; j < windowEnd; j++) {
+      for (let j = i + 1; j < end; j++) {
         const drop = forecast.surfacePressure[i] - forecast.surfacePressure[j]
-        if (drop > maxDrop) {
-          maxDrop = drop
+        if (drop > maxDrop24h) {
+          maxDrop24h = drop
           dropStartsAt = forecast.time[i]
         }
       }
     }
 
-    maxDrop = Math.round(maxDrop * 10) / 10
-    // 日内の全体変動幅(MAX-MIN)も考慮してリスク判定
-    const dailyRange = maxPressure - minPressure
-    const riskValue = Math.max(maxDrop, dailyRange)
-    const level =
-      riskValue >= threshold
-        ? 'high'
-        : riskValue >= threshold * 0.6
-          ? 'medium'
-          : 'low'
+    maxDrop24h = Math.round(maxDrop24h * 10) / 10
 
     const d = new Date(date + 'T00:00:00')
     const weekday = WEEKDAY[d.getDay()]
@@ -144,14 +132,36 @@ export function analyzeWeeklyRisk(
       label,
       weekday,
       day: d.getDate(),
-      level,
-      maxDrop,
+      level: 'low', // 仮。前日比計算後に再判定
+      maxDrop24h,
+      dayOverDay: null, // 後で計算
       minPressure,
       maxPressure,
       avgPressure,
       dropStartsAt,
       hourly,
     })
+  }
+
+  // 前日比を計算（当日平均 - 前日平均）
+  for (let i = 0; i < days.length; i++) {
+    if (i > 0) {
+      days[i].dayOverDay =
+        Math.round((days[i].avgPressure - days[i - 1].avgPressure) * 10) / 10
+    }
+  }
+
+  // リスク判定: 24h最大低下と前日比の悪い方で判定
+  for (const day of days) {
+    const drop24h = day.maxDrop24h
+    const dodAbs = day.dayOverDay !== null ? Math.abs(day.dayOverDay) : 0
+    const riskValue = Math.max(drop24h, dodAbs)
+    day.level =
+      riskValue >= threshold
+        ? 'high'
+        : riskValue >= threshold * 0.6
+          ? 'medium'
+          : 'low'
   }
 
   return { currentPressure, days: days.slice(0, 7) }

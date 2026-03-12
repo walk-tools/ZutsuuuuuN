@@ -9,7 +9,13 @@
       "Bash(timeout 3 bash:*)",
       "WebSearch",
       "Bash(grep:*)",
-      "Bash(cd \"C:\\\\Users\\\\ayumu\\\\Desktop\\\\WalkTools\\\\ZutsuuuuuN\" && gh auth status 2>&1)"
+      "Bash(cd \"C:\\\\Users\\\\ayumu\\\\Desktop\\\\WalkTools\\\\ZutsuuuuuN\" && gh auth status 2>&1)",
+      "Bash(gh api:*)",
+      "Bash(git add:*)",
+      "Bash(git push:*)",
+      "Bash(git remote:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(npx vite:*)"
     ]
   }
 }

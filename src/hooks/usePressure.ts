@@ -13,6 +13,7 @@ interface PressureState {
   loading: boolean
   error: string | null
   locationDenied: boolean
+  threshold: number
 }
 
 const DEFAULT_THRESHOLD = 6
@@ -52,6 +53,7 @@ export function usePressure(): PressureState {
     loading: true,
     error: null,
     locationDenied: false,
+    threshold: DEFAULT_THRESHOLD,
   })
 
   useEffect(() => {
@@ -63,7 +65,7 @@ export function usePressure(): PressureState {
         if (cancelled) return
 
         if (!loc) {
-          setState({ weekly: null, locationName: '', loading: false, error: null, locationDenied: true })
+          setState({ weekly: null, locationName: '', loading: false, error: null, locationDenied: true, threshold: DEFAULT_THRESHOLD })
           return
         }
 
@@ -84,6 +86,7 @@ export function usePressure(): PressureState {
           loading: false,
           error: null,
           locationDenied: false,
+          threshold,
         })
       } catch (e) {
         if (cancelled) return
@@ -93,6 +96,7 @@ export function usePressure(): PressureState {
           loading: false,
           error: e instanceof Error ? e.message : '取得に失敗しました',
           locationDenied: false,
+          threshold: DEFAULT_THRESHOLD,
         })
       }
     }

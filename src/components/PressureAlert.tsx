@@ -79,8 +79,8 @@ function HourlyChart({ hourly }: { hourly: HourlyPoint[] }) {
   )
 }
 
-function DayColumn({ day, isToday, isSelected, globalMin, globalMax, onClick }: {
-  day: DailyRisk; isToday: boolean; isSelected: boolean; globalMin: number; globalMax: number; onClick: () => void
+function DayColumn({ day, isToday, isSelected, globalMin, globalMax, threshold, onClick }: {
+  day: DailyRisk; isToday: boolean; isSelected: boolean; globalMin: number; globalMax: number; threshold: number; onClick: () => void
 }) {
   const cfg = riskConfig[day.level]
   const range = globalMax - globalMin || 1
@@ -107,8 +107,10 @@ function DayColumn({ day, isToday, isSelected, globalMin, globalMax, onClick }: 
         }} />
       </div>
       <span className="text-xs">{cfg.emoji}</span>
-      {day.maxDrop > 0 ? (
-        <span className={`text-[10px] font-medium ${cfg.color}`}>-{day.maxDrop}</span>
+      {day.dayOverDay !== null ? (
+        <span className={`text-[10px] font-medium ${day.dayOverDay <= -threshold * 0.6 ? 'text-red-500' : day.dayOverDay >= threshold * 0.6 ? 'text-emerald-500' : 't-muted'}`}>
+          {day.dayOverDay > 0 ? '↑' : day.dayOverDay < 0 ? '↓' : '→'}{Math.abs(day.dayOverDay)}
+        </span>
       ) : (
         <span className="text-[10px] t-muted">—</span>
       )}
@@ -117,7 +119,7 @@ function DayColumn({ day, isToday, isSelected, globalMin, globalMax, onClick }: 
 }
 
 export default function PressureAlert() {
-  const { weekly, locationName, loading, error, locationDenied } = usePressure()
+  const { weekly, locationName, loading, error, locationDenied, threshold } = usePressure()
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null)
 
   if (loading) {
@@ -173,7 +175,10 @@ export default function PressureAlert() {
               </p>
               <p className="text-[11px] t-secondary mt-0.5">
                 現在 {weekly.currentPressure} hPa
-                {todayRisk.maxDrop > 0 && <span className={todayStyle.color}> · 最大 -{todayRisk.maxDrop} hPa</span>}
+                {todayRisk.maxDrop24h > 0 && <span className={todayStyle.color}> · 24h最大低下 -{todayRisk.maxDrop24h} hPa</span>}
+                {todayRisk.dayOverDay !== null && todayRisk.dayOverDay !== 0 && (
+                  <span className={todayRisk.dayOverDay < 0 ? todayStyle.color : 'text-emerald-500'}> · 前日比 {todayRisk.dayOverDay > 0 ? '+' : ''}{todayRisk.dayOverDay} hPa</span>
+                )}
               </p>
             </div>
           </div>
@@ -186,16 +191,34 @@ export default function PressureAlert() {
         <div className="grid grid-cols-7 gap-0.5">
           {weekly.days.map((day, i) => (
             <DayColumn key={day.date} day={day} isToday={day.date === todayStr} isSelected={selectedIdx === i}
-              globalMin={allMin} globalMax={allMax} onClick={() => setSelectedIdx(selectedIdx === i ? null : i)} />
+              globalMin={allMin} globalMax={allMax} threshold={threshold} onClick={() => setSelectedIdx(selectedIdx === i ? null : i)} />
           ))}
         </div>
         {selectedDay && (
           <div className="mt-3 pt-3" style={{ borderTop: '1px solid var(--glass-border)' }}>
-            <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center justify-between mb-2">
               <p className="text-xs t-secondary font-medium">{selectedDay.label} の気圧変化</p>
               <span className={`text-xs ${riskConfig[selectedDay.level].color}`}>
                 {riskConfig[selectedDay.level].emoji} {riskConfig[selectedDay.level].label}
               </span>
+            </div>
+            <div className="flex gap-2 mb-2">
+              <div className="flex-1 glass rounded-xl px-3 py-2">
+                <p className="text-[10px] t-muted mb-0.5">前日比</p>
+                {selectedDay.dayOverDay !== null ? (
+                  <p className={`text-sm font-bold ${selectedDay.dayOverDay <= -threshold * 0.6 ? 'text-red-500' : selectedDay.dayOverDay >= threshold * 0.6 ? 'text-emerald-500' : 't-primary'}`}>
+                    {selectedDay.dayOverDay > 0 ? '+' : ''}{selectedDay.dayOverDay} <span className="text-[10px] font-normal t-muted">hPa</span>
+                  </p>
+                ) : (
+                  <p className="text-sm t-muted">—</p>
+                )}
+              </div>
+              <div className="flex-1 glass rounded-xl px-3 py-2">
+                <p className="text-[10px] t-muted mb-0.5">24h最大低下</p>
+                <p className={`text-sm font-bold ${selectedDay.maxDrop24h >= threshold ? 'text-red-500' : selectedDay.maxDrop24h >= threshold * 0.6 ? 'text-yellow-500' : 't-primary'}`}>
+                  {selectedDay.maxDrop24h > 0 ? `-${selectedDay.maxDrop24h}` : '0'} <span className="text-[10px] font-normal t-muted">hPa</span>
+                </p>
+              </div>
             </div>
             <HourlyChart hourly={selectedDay.hourly} />
           </div>

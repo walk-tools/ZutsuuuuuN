@@ -125,10 +125,13 @@ export function analyzeWeeklyRisk(
     }
 
     maxDrop = Math.round(maxDrop * 10) / 10
+    // 日内の全体変動幅(MAX-MIN)も考慮してリスク判定
+    const dailyRange = maxPressure - minPressure
+    const riskValue = Math.max(maxDrop, dailyRange)
     const level =
-      maxDrop >= threshold
+      riskValue >= threshold
         ? 'high'
-        : maxDrop >= threshold * 0.6
+        : riskValue >= threshold * 0.6
           ? 'medium'
           : 'low'
 

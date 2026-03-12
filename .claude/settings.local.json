@@ -8,7 +8,8 @@
       "Bash(npm run:*)",
       "Bash(timeout 3 bash:*)",
       "WebSearch",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(cd \"C:\\\\Users\\\\ayumu\\\\Desktop\\\\WalkTools\\\\ZutsuuuuuN\" && gh auth status 2>&1)"
     ]
   }
 }
